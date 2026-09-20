@@ -39,11 +39,24 @@ public class OrderController
     @PostMapping
     public ResponseEntity<PaymentLinkResponse> createOrderHandler(
             @RequestBody Address shippingAddress,
-            @RequestParam PaymentMethod paymentMethod,
+            @RequestParam(name = "paymentMethod", required = false, defaultValue = "COD") String paymentMethodParam,
             @RequestHeader("Authorization") String jwt
     ) throws Exception {
         User user = userService.findUserByJwtToken(jwt);
         Cart cart = cartService.findUserCart(user);
+
+        PaymentMethod paymentMethod = PaymentMethod.COD;
+        if (paymentMethodParam != null) {
+            String upper = paymentMethodParam.trim().toUpperCase();
+            if (upper.contains("RAZORPAY")) {
+                paymentMethod = PaymentMethod.RAZORPAY;
+            } else if (upper.contains("STRIPE")) {
+                paymentMethod = PaymentMethod.STRIPE;
+            } else {
+                paymentMethod = PaymentMethod.COD;
+            }
+        }
+
         Set<Order> orders = orderService.createOrder(user, shippingAddress, cart);
         PaymentOrder paymentOrder = paymentService.createOrder(user, orders);
         PaymentLinkResponse res = new PaymentLinkResponse();

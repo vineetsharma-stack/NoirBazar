@@ -64,6 +64,8 @@ public class AppConfig {
                                 "/error",
                                 "/api/products/*/reviews",
                                 "/api/home/**",
+                                "/home-page",
+                                "/home/**",
                                 "/home-categories/**",
                                 "/sellers/sent/**",
                                 "/sellers/verify/**",

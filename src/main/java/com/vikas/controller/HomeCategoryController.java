@@ -26,6 +26,14 @@ public class HomeCategoryController {
         return new ResponseEntity<>(home, HttpStatus.ACCEPTED);
     }
 
+    @GetMapping("/home-page")
+    public ResponseEntity<Home> getHomePageData() {
+        List<HomeCategory> categories =
+                homeCategoryService.getAllHomeCategories();
+        Home home = homeService.createHomePageData(categories);
+        return ResponseEntity.ok(home);
+    }
+
     @GetMapping("/admin/home-category")
     public ResponseEntity<List<HomeCategory>> getHomeCategory()
             throws Exception {

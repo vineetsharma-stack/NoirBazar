@@ -23,12 +23,30 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public Set<Order> createOrder(User user, Address shippingAddress, Cart cart) {
-        if(!user.getAddresses().contains(shippingAddress)) {
-            user.getAddresses().add(shippingAddress);
+        Address address;
+        if (shippingAddress != null && shippingAddress.getId() != null && shippingAddress.getId() > 0 && addressRepository.existsById(shippingAddress.getId())) {
+            address = addressRepository.findById(shippingAddress.getId()).orElse(shippingAddress);
+        } else if (shippingAddress != null) {
+            shippingAddress.setId(null);
+            address = addressRepository.save(shippingAddress);
+        } else {
+            address = new Address();
+            address.setName(user.getFullName());
+            address.setPhoneNumber(user.getPhoneNumber());
+            address = addressRepository.save(address);
         }
-        Address address = addressRepository.save(shippingAddress);
+
+        if (address != null && !user.getAddresses().contains(address)) {
+            user.getAddresses().add(address);
+        }
+
         Map<Long, List<CartItem>> itemsBySellers = cart.getCartItems().stream()
-                .collect(Collectors.groupingBy(item ->item.getProduct().getSeller().getId()));
+                .collect(Collectors.groupingBy(item -> {
+                    if (item.getProduct() != null && item.getProduct().getSeller() != null && item.getProduct().getSeller().getId() != null) {
+                        return item.getProduct().getSeller().getId();
+                    }
+                    return 1L;
+                }));
         Set<Order> orders = new HashSet<>();
         for (Map.Entry<Long, List<CartItem>> entry : itemsBySellers.entrySet()) {
 
